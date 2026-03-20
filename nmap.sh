@@ -7,6 +7,10 @@ declare -a CMD_LIST=()
 section() { echo -e "\n== $1 =="; }
 prompt() { echo -ne " > $1 "; }
 
+# Need a function to register/display commands.
+cmd() {
+}
+
 collect_inputs() {
 	section "Target Configuration"
 	
@@ -44,6 +48,8 @@ collect_inputs() {
 	read -r CHOICE
 	CHOICE="${CHOICE:-all}"
 }
+
+# Building of the different command sections.
 
 main() {
 	clear
