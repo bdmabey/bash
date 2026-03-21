@@ -60,7 +60,12 @@ collect_inputs() {
 # Building of the different command sections.
 show_discovery() {
 	section "1 - Discovery / Host Detection"
-	cmd "nmap -sn ${TARGET}"	"Ping sweep - find live hosts, no port scan."
+	cmd "nmap -sn ${TARGET}"		"Ping sweep - find live hosts, no port scan."
+	cmd "nmap -sn -PE -PP -PM ${TARGET}"	"ICMP echo, timestamp & netmask sweep."
+	cmd "nmap -sn --traceroute ${TARGET}"	"Ping sweep + traceroute."
+	cmd "nmap -sL ${TARGET}"		"List targets without sending packets."
+	cmd "nmap -sn -PR ${TARGET}"		"ARP scan (LAN only, very fast)"
+	cmd "nmap -n -sn ${TARGET}"		"Skip DNS resolution for faster sweep."
 }
 
 main() {
