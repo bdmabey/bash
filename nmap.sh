@@ -9,6 +9,14 @@ prompt() { echo -ne " > $1 "; }
 
 # Need a function to register/display commands.
 cmd() {
+	local command="$1"
+	local desc="$2"
+
+	echo -e "  [$(( ${#CMD_LIST[@]} + 1 ))] $command"
+	echo -e "      ${desc}"
+
+	CMD_LIST+=("$command")
+	CMD_LABELS+=("$desc")
 }
 
 collect_inputs() {
@@ -50,11 +58,28 @@ collect_inputs() {
 }
 
 # Building of the different command sections.
+show_discovery() {
+	section "1 - Discovery / Host Detection"
+	cmd "nmap -sn ${TARGET}"	"Ping sweep - find live hosts, no port scan."
+}
 
 main() {
 	clear
 	collect_inputs
 
+	local c="${CHOICE,,}"
+
+	if [[ "$c" == "all" ]]; then
+		show_discovery
+	else
+		IFS=',' read -ra CATS <<< "$c"
+		for cat in "${CATS[@]}"; do
+			cat="${cat// /}"
+			case "$cat" in
+				1) show_discovery ;;
+			esac
+		done
+	fi
 }
 
 main "$@"
