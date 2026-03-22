@@ -68,6 +68,41 @@ show_discovery() {
 	cmd "nmap -n -sn ${TARGET}"		"Skip DNS resolution for faster sweep."
 }
 
+show_port_enum() {
+	section "2 - Port & Service Enumeration"
+	cmd "nmap -sS ${PORT_FLAG} ${TARGET}"		"SYN (stealth) scan - ${PORT_LABEL}"
+	cmd "nmap -sT ${PORT_FLAG} ${TARGET}"		"Full TCP connect scan - ${PORT_LABEL}"
+	cmd "nmap -sU ${PORT_FLAG} ${TARGET}"		"UDP scan - ${PORT_LABEL}"
+	cmd "nmap -sS -sU ${PORT_FLAG} ${TARGET}"	"Combined TCP SYN & UDP - ${PORT_LABEL}"
+	cmd "nmap -p- ${TARGET}"			"All 65535 ports (slow but thorough)"
+	cmd "nmap --top-ports 100 ${TARGET}"		"Top 100 most common ports"
+	cmd "nmap --top-ports 1000 ${TARGET}"		"Top 1000 most common ports"
+	cmd "nmap -sS -F ${TARGET}"			"Fast scan - top 100 ports only"	
+}
+
+show_version_os() {
+	section "3 - Version & OS Detection"
+	cmd "nmap -sV ${PORT_FLAG} ${TARGET}"		"Service/version detection - ${PORT_LABEL}"
+	cmd "nmap -O ${TARGET}"				"OS fingerprinting"
+	cmd "nmap -A ${PORT_FLAG} ${TARGET}"		"Aggressive OS/version/scripts/traceroute"
+	cmd "nmap -sV --version-intensity 9 ${PORT_FLAG} ${TARGET}" "Max version detection intensity"
+	cmd "nmap -sV -sC ${PORT_FLAG} ${TARGET}"	"Version detection & default scripts"
+	cmd "nmap -O --osscan-guess ${TARGET}"		"OS detection with best-guess fallback"
+}
+
+show_vuln_scripts() {
+	section "4 - Vulnerabilty / Script Scanning"
+	cmd "nmap -sC ${PORT_FLAG} ${TARGET}"		"Default NSE scripts - ${PORT_LABEL}"
+	cmd "nmap --script=vuln ${PORT_FLAG} ${TARGET}"	"Run all vuln-category scripts."
+	cmd "nmap --script=safe,discovery ${PORT_FLAG} ${TARGET}" "Safe & discovery scripts."
+	cmd "nmap --script=http-enum ${PORT_FLAG:-p 80,443,8000} ${TARGET}" "HTTP Enumeration"
+	cmd "nmap --script=smb-vuln-* -p 445 ${TARGET}" "SMB vulnerability check."
+	cmd "nmap --script=ssl-enum-ciphers ${PORT_FLAG:-p 443} ${TARGET}" "SSL/TLS cipher enumeration."
+	cmd "nmap --script=ftp-anon -p 21 ${TARGET}"	"Check for anonymous FTP access."
+	cmd "nmap --script=dns-brute ${TARGET}"		"DNS subdomain brute-force."
+	cmd "nmap --script=auth ${PORT_FLAG} ${TARGET}"	"Test for default/blank credentials."
+}
+
 main() {
 	clear
 	collect_inputs
@@ -76,12 +111,18 @@ main() {
 
 	if [[ "$c" == "all" ]]; then
 		show_discovery
+		show_port_enum
+		show_version_os
+		show_vuln_scripts
 	else
 		IFS=',' read -ra CATS <<< "$c"
 		for cat in "${CATS[@]}"; do
 			cat="${cat// /}"
 			case "$cat" in
-				1) show_discovery ;;
+				1) show_discovery    ;;
+				2) show_port_enum    ;;
+				3) show_version_os   ;;
+				4) show_vuln_scripts ;;
 			esac
 		done
 	fi
