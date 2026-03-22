@@ -103,6 +103,32 @@ show_vuln_scripts() {
 	cmd "nmap --script=auth ${PORT_FLAG} ${TARGET}"	"Test for default/blank credentials."
 }
 
+show_stealth() {
+	section "5 - Stealth & Evasion"
+	cmd "nmap -sS -T0 ${PORT_FLAG} ${TARGET}"	"Paranoid timing - slowest, hardest to detect."
+	cmd "nmap -sS -T1 ${PORT_FLAG} ${TARGET}"	"Sneaky timing."
+	cmd "nmap -sS -f ${PORT_FLAG} ${TARGET}"	"Fragment pakcets to evade firewalls."
+	cmd "nmap -D RND:10 ${PORT_FLAG} ${TARGET}"	"Decoy scan (10 random decoys)"
+	cmd "nmap --source-port 53 ${PORT_FLAG} ${TARGET}" "Spoof source port (DNS - often allowed)"
+	cmd "nmap -sS --data-length 25 ${PORT_FLAG} ${TARGET}" "Append random data to packets."
+	cmd "nmap -sS -n ${PORT_FLAG} ${TARGET}" 	"Skip DNS lookups (faster & quieter)."
+	cmd "nmap --randomize-hosts ${PORT_FLAG} ${TARGET}" "Randomise host scan order."
+	cmd "nmap --spoof-mac APPLE ${PORT_FLAG} ${TARGET}" "Spoof MAC address as Apple vendor."
+}
+
+show_output_cmds() {
+	section "6 - Output & Reporting"
+	cmd "nmap ${PORT_FLAG} ${TARGET} -oN scan.txt"	"Normal (human-readable) output"
+	cmd "nmap ${PORT_FLAG} ${TARGET} -oX scan.xml"	"XML Output"
+	cmd "nmap ${PORT_FLAG} ${TARGET} -oG scan.txt"	"Greppable output."
+	cmd "nmap ${PORT_FLAG} ${TARGET} -oA scan"	"All formats at once"
+	cmd "nmap -v ${PORT_FLAG} ${TARGET}"		"Verbose output."
+	cmd "nmap -vv ${PORT_FLAG} ${TARGET}"		"Very verbose output."
+	cmd "nmap --open ${PORT_FLAG} ${TARGET}"		"Show only open ports."
+	cmd "nmap --reason ${PORT_FLAG} ${TARGET}"	"Show reason for each port state."
+	cmd "nmap -sV --open ${PORT_FLAG} ${TARGET} -oA scan"	"Combined scan & all output."
+}
+
 main() {
 	clear
 	collect_inputs
@@ -114,6 +140,8 @@ main() {
 		show_port_enum
 		show_version_os
 		show_vuln_scripts
+		show_stealth
+		show_output_cmds
 	else
 		IFS=',' read -ra CATS <<< "$c"
 		for cat in "${CATS[@]}"; do
@@ -123,6 +151,8 @@ main() {
 				2) show_port_enum    ;;
 				3) show_version_os   ;;
 				4) show_vuln_scripts ;;
+				5) show_stealth      ;;
+				6) show_output_cmds  ;;
 			esac
 		done
 	fi
